@@ -1,0 +1,18 @@
+@"
+# Node
+node_modules/
+dist/
+.env
+.vscode/
+.DS_Store
+
+# Python
+venv/
+__pycache__/
+*.pyc
+models/
+*.pkl
+
+# OS / Editor
+.idea/
+"@ 
