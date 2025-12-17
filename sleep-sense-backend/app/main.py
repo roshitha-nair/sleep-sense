@@ -1,63 +1,99 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+import joblib
 
+from app.schemas import SleepRequest, SleepResponse
+from app.utils.feature_engineering import build_features
 
 app = FastAPI()
+
+# ✅ CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # frontend URL
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# ✅ Load models
+score_model = joblib.load("app/ml/sleep_score_model.pkl")
+quality_model = joblib.load("app/ml/sleep_quality_model.pkl")
+scaler = joblib.load("app/ml/scaler.pkl")
 
-# ---------- Request schema ----------
-class SleepRequest(BaseModel):
-    bedtime: str
-    wakeTime: str
-    screenTime: int
-    caffeineCups: int
-    lastCaffeine: str | None
-    stress: int
-    activity: int
-    nap: bool
-    napDuration: int
 
-# ---------- Response schema ----------
-class SleepResponse(BaseModel):
-    sleep_score: int
-    sleep_quality: str
-    tips: list[str]
-
-# ---------- Predict endpoint ----------
 @app.post("/predict", response_model=SleepResponse)
 def predict_sleep(data: SleepRequest):
-    # TEMP LOGIC (we’ll replace with ML later)
-    score = 80
+
+    # 🔧 Feature engineering
+    features, sleep_duration = build_features(data)
+    X = scaler.transform([features])
+
+    # 🎯 ML predictions
+    score = int(score_model.predict(X)[0])
+    quality = quality_model.predict(X)[0]
+
+    # ==================================================
+    # 🔥 SEVERITY ADJUSTMENT (HYBRID LOGIC)
+    # ==================================================
+    penalty = 0
+
+    if sleep_duration < 6:
+        penalty += 8
+
+    if data.screenTime > 120:
+        penalty += 6
+
+    if data.stress >= 4:
+        penalty += 6
+
+    if data.caffeineCups >= 3:
+        penalty += 5
+
+    if data.nap and data.napDuration > 45:
+        penalty += 4
+
+    score = max(30, score - penalty)
+
+    # ==================================================
+    # 🧠 PRIORITIZED RULE-BASED TIPS
+    # ==================================================
+    tips_with_priority = []
+
+    if sleep_duration < 7:
+        tips_with_priority.append(
+            (1, "Try to get at least 7 hours of sleep for optimal recovery")
+        )
+
+    if data.caffeineCups > 1 or (
+        data.lastCaffeine and int(data.lastCaffeine.split(":")[0]) >= 18
+    ):
+        tips_with_priority.append(
+            (2, "Avoid caffeine intake after 6 PM for better sleep")
+        )
 
     if data.screenTime > 60:
-        score -= 10
-    if data.stress >= 4:
-        score -= 10
-    if data.caffeineCups >= 3:
-        score -= 10
+        tips_with_priority.append(
+            (3, "Reduce screen exposure at least 30 minutes before bedtime")
+        )
 
-    if score >= 75:
-        quality = "Good"
-    elif score >= 50:
-        quality = "Average"
-    else:
-        quality = "Poor"
-
-    tips = []
-    if data.screenTime > 60:
-        tips.append("Reduce screen time before bed")
-    if data.caffeineCups >= 3:
-        tips.append("Avoid caffeine late in the day")
     if data.stress >= 4:
-        tips.append("Try relaxation techniques before sleep")
+        tips_with_priority.append(
+            (4, "Practice relaxation techniques like deep breathing or meditation before sleep")
+        )
+
+    if data.activity < 30:
+        tips_with_priority.append(
+            (5, "Engaging in light physical activity during the day can improve sleep quality")
+        )
+
+    if data.nap and data.napDuration > 30:
+        tips_with_priority.append(
+            (6, "Limit naps to under 30 minutes to avoid disrupting nighttime sleep")
+        )
+
+    # ✅ Top 4 tips only
+    tips = [tip for _, tip in sorted(tips_with_priority)[:4]]
 
     return {
         "sleep_score": score,

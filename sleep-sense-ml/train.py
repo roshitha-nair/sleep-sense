@@ -3,13 +3,13 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error, accuracy_score
+from sklearn.preprocessing import StandardScaler
 import joblib
 import os
 
 np.random.seed(42)
 
 N = 2000
-
 data = []
 
 for _ in range(N):
@@ -25,14 +25,13 @@ for _ in range(N):
     naps = np.random.choice([0, 1])
     nap_duration = np.random.randint(10, 60) if naps else 0
 
-    # ---- Sleep Score Formula ----
     score = (
-        50
-        + sleep_duration * 6
-        - screen_time * 0.05
+        40
+        + sleep_duration * 7
+        - screen_time * 0.07
         - caffeine * 3
         - max(0, last_caffeine_hour - 16) * 2
-        - stress * 3
+        - stress * 4
         + activity * 0.1
         - naps * 2
     )
@@ -82,7 +81,6 @@ os.makedirs("data", exist_ok=True)
 df.to_csv("data/sleep_data.csv", index=False)
 
 print("✅ Dataset generated: data/sleep_data.csv")
-print(df.head())
 
 # ================== MODEL TRAINING ==================
 
@@ -98,21 +96,33 @@ X_train_q, X_test_q, y_train_q, y_test_q = train_test_split(
     X, y_quality, test_size=0.2, random_state=42
 )
 
+# ✅ SCALER
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+X_train_q_scaled = scaler.transform(X_train_q)
+X_test_q_scaled = scaler.transform(X_test_q)
+
+# 🎯 MODELS
 score_model = RandomForestRegressor(n_estimators=200, random_state=42)
-score_model.fit(X_train, y_score_train)
+score_model.fit(X_train_scaled, y_score_train)
 
 quality_model = RandomForestClassifier(n_estimators=200, random_state=42)
-quality_model.fit(X_train_q, y_train_q)
+quality_model.fit(X_train_q_scaled, y_train_q)
 
-score_pred = score_model.predict(X_test)
-quality_pred = quality_model.predict(X_test_q)
+score_pred = score_model.predict(X_test_scaled)
+quality_pred = quality_model.predict(X_test_q_scaled)
 
 print("\n📊 MODEL PERFORMANCE")
 print("Sleep Score MAE:", round(mean_absolute_error(y_score_test, score_pred), 2))
 print("Sleep Quality Accuracy:", round(accuracy_score(y_test_q, quality_pred) * 100, 2), "%")
 
+# ================== SAVE MODELS ==================
+
 os.makedirs("models", exist_ok=True)
 joblib.dump(score_model, "models/sleep_score_model.pkl")
 joblib.dump(quality_model, "models/sleep_quality_model.pkl")
+joblib.dump(scaler, "models/scaler.pkl")
 
-print("\n✅ Models saved in /models")
+print("\n✅ Models & scaler saved in /models")
