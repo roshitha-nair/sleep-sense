@@ -10,6 +10,8 @@ import {
 } from "@mui/material";
 import Navbar from "../components/layout/Navbar";
 import AppButton from "../components/common/AppButton";
+import { analyzeSleep } from "../services/api";
+
 
 function Analyze({ toggleTheme, mode }) {
   const [form, setForm] = useState({
@@ -32,20 +34,27 @@ function Analyze({ toggleTheme, mode }) {
     form.activity >= 0 &&
     (!form.nap || (form.nap && form.napDuration > 0));
 
-    const handleSubmit = () => {
-        const payload = {
-            bedtime: form.bedtime,
-            wakeTime: form.wakeTime,
-            screenTime: Number(form.screenTime),
-            caffeineCups: Number(form.caffeineCups),
-            lastCaffeine: form.lastCaffeine || null,
-            stress: form.stress,
-            activity: Number(form.activity),
-            nap: form.nap,
-            napDuration: form.nap ? Number(form.napDuration) : 0,
-        };
+    const handleSubmit = async () => {
+        try {
+            const payload = {
+                bedtime: form.bedtime,
+                wakeTime: form.wakeTime,
+                screenTime: Number(form.screenTime),
+                caffeineCups: Number(form.caffeineCups),
+                lastCaffeine: form.lastCaffeine || null,
+                stress: form.stress,
+                activity: Number(form.activity),
+                nap: form.nap,
+                napDuration: form.nap ? Number(form.napDuration) : 0,
+            };
 
-        console.log("Sleep Analysis Payload:", payload);
+            // ✅ ACTUAL BACKEND CALL
+            const result = await analyzeSleep(payload);
+
+            console.log("Prediction result:", result);
+        } catch (error) {
+            console.error("Error calling backend:", error);
+        }
     };
 
 
