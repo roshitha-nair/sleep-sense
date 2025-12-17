@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://sleep-sense-backend.onrender.com";
 
 export const analyzeSleep = async (payload) => {
   const response = await axios.post(`${API_BASE}/predict`, payload);
