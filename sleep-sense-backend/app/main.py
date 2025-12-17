@@ -21,6 +21,11 @@ score_model = joblib.load("app/ml/sleep_score_model.pkl")
 quality_model = joblib.load("app/ml/sleep_quality_model.pkl")
 scaler = joblib.load("app/ml/scaler.pkl")
 
+@app.get("/")
+def root():
+    return {"status": "Sleep Sense API running"}
+
+
 
 @app.post("/predict", response_model=SleepResponse)
 def predict_sleep(data: SleepRequest):
