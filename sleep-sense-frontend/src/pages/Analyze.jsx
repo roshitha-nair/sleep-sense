@@ -11,6 +11,8 @@ import {
 import Navbar from "../components/layout/Navbar";
 import AppButton from "../components/common/AppButton";
 import { analyzeSleep } from "../services/api";
+import { useNavigate } from "react-router-dom";
+
 
 
 function Analyze({ toggleTheme, mode }) {
@@ -25,6 +27,8 @@ function Analyze({ toggleTheme, mode }) {
     nap: false,
     napDuration: "",
   });
+
+  const navigate = useNavigate();
 
   const isFormValid =
     form.bedtime &&
@@ -51,11 +55,18 @@ function Analyze({ toggleTheme, mode }) {
             // ✅ ACTUAL BACKEND CALL
             const result = await analyzeSleep(payload);
 
-            console.log("Prediction result:", result);
+            // ✅ Navigate to Results page with backend data
+            navigate("/result", {
+                state: {
+                result,
+                input: payload,
+            },
+            });
         } catch (error) {
             console.error("Error calling backend:", error);
         }
     };
+
 
 
 
