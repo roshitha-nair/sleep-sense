@@ -8,7 +8,7 @@ import {
   Switch,
   Paper,
 } from "@mui/material";
-import Navbar from "../components/layout/Navbar";
+
 import AppButton from "../components/common/AppButton";
 import { analyzeSleep } from "../services/api";
 import { useNavigate } from "react-router-dom";
@@ -72,7 +72,7 @@ function Analyze({ toggleTheme, mode }) {
 
   return (
     <>
-      <Navbar toggleTheme={toggleTheme} mode={mode} />
+    
 
       <Box sx={{ py: 8, px: 2 }}>
         {/* Title */}

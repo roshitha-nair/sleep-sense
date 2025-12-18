@@ -3,30 +3,31 @@ import { NavLink } from "react-router-dom";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import logo from "../../assets/logo.png";
-
+import LogoutButton from "../common/LogoutButton";
+import { useAuth } from "../../context/AuthContext";
 
 function Navbar({ toggleTheme, mode }) {
+  const { user, loading } = useAuth();
+
+  // 🔒 Hide navbar if not authenticated
+  if (loading || !user) return null;
+
   return (
     <Box
-        sx={{
-            px: 6,
-            py: 2,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            backgroundColor: "background.paper",
-            borderBottom: "1px solid",
-            borderColor: "divider",
-        }}
+      sx={{
+        px: 6,
+        py: 2,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        backgroundColor: "background.paper",
+        borderBottom: "1px solid",
+        borderColor: "divider",
+      }}
     >
-
       {/* Logo */}
       <Stack direction="row" spacing={1} alignItems="center">
-        <img
-          src={logo}
-          alt="Sleep Sense Logo"
-          style={{ width: 40, height: 40 }}
-        />
+        <img src={logo} alt="Sleep Sense Logo" width={40} height={40} />
         <Typography fontWeight={600}>
           <span style={{ color: "#b3dbe2ff" }}>Sleep </span>
           <span style={{ color: "#6b8eaa" }}>Sense</span>
@@ -36,7 +37,7 @@ function Navbar({ toggleTheme, mode }) {
       {/* Navigation */}
       <Stack direction="row" spacing={4} alignItems="center">
         {[
-          { label: "Home", path: "/" },
+          { label: "Home", path: "/home" },
           { label: "Analyze", path: "/analyze" },
           { label: "Dashboard", path: "/dashboard" },
         ].map((item) => (
@@ -52,12 +53,10 @@ function Navbar({ toggleTheme, mode }) {
                   color: isActive ? "primary.main" : "text.primary",
                   position: "relative",
                   transition: "all 0.2s ease",
-
                   "&:hover": {
                     transform: "translateY(-2px)",
                     color: "#4F46E5",
                   },
-
                   "&::after": {
                     content: '""',
                     position: "absolute",
@@ -68,7 +67,6 @@ function Navbar({ toggleTheme, mode }) {
                     backgroundColor: "#4F46E5",
                     transition: "width 0.2s ease",
                   },
-
                   "&:hover::after": {
                     width: "100%",
                   },
@@ -80,24 +78,17 @@ function Navbar({ toggleTheme, mode }) {
           </NavLink>
         ))}
 
-        {/* Dark mode icon */}
-        <IconButton
-            onClick={toggleTheme}
-            sx={{
-                transition: "all 0.2s ease",
-                "&:hover": {
-                    transform: "translateY(-2px)",
-                    boxShadow: "0px 6px 16px rgba(0,0,0,0.12)",
-                },
-            }}
-        >
-            {mode === "light" ? (
-                <DarkModeOutlinedIcon />
-            ) : (
-                <LightModeOutlinedIcon />
-            )}
+        {/* Dark Mode */}
+        <IconButton onClick={toggleTheme}>
+          {mode === "light" ? (
+            <DarkModeOutlinedIcon />
+          ) : (
+            <LightModeOutlinedIcon />
+          )}
         </IconButton>
 
+        {/* Logout */}
+        <LogoutButton />
       </Stack>
     </Box>
   );

@@ -1,6 +1,5 @@
 import { Box, Typography, Paper, Stack } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
-import Navbar from "../components/layout/Navbar";
 import AppButton from "../components/common/AppButton";
 import { useEffect, useState } from "react";
 
@@ -65,7 +64,6 @@ function Result({ toggleTheme, mode }) {
 
   return (
     <>
-      <Navbar toggleTheme={toggleTheme} mode={mode} />
 
       <Box sx={{ py: 8, px: 2 }}>
         <Typography variant="h1" textAlign="center" mb={1}>

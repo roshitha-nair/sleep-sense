@@ -1,6 +1,5 @@
 import { Box, Typography, Stack, Grid } from "@mui/material";
 import { Link } from "react-router-dom";
-import Navbar from "../components/layout/Navbar";
 import AppButton from "../components/common/AppButton";
 import FeatureCard from "../components/home/FeatureCard";
 import PsychologyIcon from "@mui/icons-material/Psychology";
@@ -9,10 +8,10 @@ import BarChartIcon from "@mui/icons-material/BarChart";
 import logo from "../assets/logo.png";
 
 
+
 function Home({ toggleTheme, mode }) {
   return (
     <>
-      <Navbar toggleTheme={toggleTheme} mode={mode} />
 
       {/* Hero Section */}
       <Box sx={{ textAlign: "center", mt: 10 }}>

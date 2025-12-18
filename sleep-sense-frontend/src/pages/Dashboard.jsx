@@ -4,9 +4,7 @@ import {
   Paper,
   Chip,
 } from "@mui/material";
-import Grid from "@mui/material/Grid";
-import Navbar from "../components/layout/Navbar";
-import {
+import Grid from "@mui/material/Grid";import {
   LineChart,
   Line,
   XAxis,
@@ -54,7 +52,7 @@ function Dashboard({ toggleTheme, mode }) {
 
   return (
     <>
-      <Navbar toggleTheme={toggleTheme} mode={mode} />
+    
 
       <Box sx={{ py: 8, px: 2 }}>
         <Box sx={{ maxWidth: 1200, mx: "auto" }}>
