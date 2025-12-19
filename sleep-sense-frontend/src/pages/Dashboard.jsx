@@ -1,10 +1,12 @@
+import { useEffect, useState } from "react";
 import {
   Box,
   Typography,
   Paper,
   Chip,
 } from "@mui/material";
-import Grid from "@mui/material/Grid";import {
+import Grid from "@mui/material/Grid";
+import {
   LineChart,
   Line,
   XAxis,
@@ -19,17 +21,34 @@ import Grid from "@mui/material/Grid";import {
   CartesianGrid,
 } from "recharts";
 
-function Dashboard({ toggleTheme, mode }) {
-  const history =
-    JSON.parse(localStorage.getItem("sleepHistory")) || [];
+import { getSleepHistory } from "../services/api";
+import { useAuth } from "../context/AuthContext";
+
+
+function Dashboard() {
+  const [history, setHistory] = useState([]);
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (loading || !user) return;
+
+    const fetchHistory = async () => {
+      try {
+        const data = await getSleepHistory();
+        setHistory(data);
+      } catch (error) {
+        console.error("Failed to load history", error);
+      }
+    };
+
+    fetchHistory();
+  }, [user, loading]);
 
   const latest = history[0];
 
   const avgScore =
     history.reduce((sum, h) => sum + h.sleep_score, 0) /
     (history.length || 1);
-
-  /* ---------- DATA ---------- */
 
   const scoreTrend = [...history].reverse().map((h) => ({
     date: h.date,
@@ -51,11 +70,8 @@ function Dashboard({ toggleTheme, mode }) {
   ];
 
   return (
-    <>
-    
-
-      <Box sx={{ py: 8, px: 2 }}>
-        <Box sx={{ maxWidth: 1200, mx: "auto" }}>
+    <Box sx={{ py: 8, px: 2 }}>
+      <Box sx={{ maxWidth: 1200, mx: "auto" }}>
         <Typography variant="h1" mb={1}>
           Sleep Dashboard
         </Typography>
@@ -63,28 +79,24 @@ function Dashboard({ toggleTheme, mode }) {
           Track your sleep patterns and progress over time
         </Typography>
 
-        {/* ================= ROW 1 : SUMMARY ================= */}
+        {/* SUMMARY */}
         <Grid container spacing={3} mb={5}>
           <Grid size={4}>
-            <Paper sx={{ p: 3, borderRadius: 3, textAlign: "center" }}>
+            <Paper sx={{ p: 3, textAlign: "center" }}>
               <Typography color="text.secondary">Latest Score</Typography>
-              <Typography variant="h2">
-                {latest?.sleep_score ?? "-"}
-              </Typography>
+              <Typography variant="h2">{latest?.sleep_score ?? "-"}</Typography>
             </Paper>
           </Grid>
 
           <Grid size={4}>
-            <Paper sx={{ p: 3, borderRadius: 3, textAlign: "center" }}>
+            <Paper sx={{ p: 3, textAlign: "center" }}>
               <Typography color="text.secondary">Average Score</Typography>
-              <Typography variant="h2">
-                {Math.round(avgScore)}
-              </Typography>
+              <Typography variant="h2">{Math.round(avgScore)}</Typography>
             </Paper>
           </Grid>
 
           <Grid size={4}>
-            <Paper sx={{ p: 3, borderRadius: 3, textAlign: "center" }}>
+            <Paper sx={{ p: 3, textAlign: "center" }}>
               <Typography color="text.secondary">Latest Quality</Typography>
               <Chip
                 label={latest?.sleep_quality ?? "-"}
@@ -100,11 +112,14 @@ function Dashboard({ toggleTheme, mode }) {
           </Grid>
         </Grid>
 
-        {/* ================= ROW 2 : LINE + BAR ================= */}
+        {/* CHARTS */}
+                {/* ================= ROW 2 : LINE + BAR ================= */}
         <Grid container spacing={4} mb={5}>
           <Grid size={6}>
             <Paper sx={{ p: 3, borderRadius: 3 }}>
-              <Typography mb={2} sx={{ fontWeight: "bold" }}>Sleep Score Trend</Typography>
+              <Typography mb={2} sx={{ fontWeight: "bold" }}>
+                Sleep Score Trend
+              </Typography>
               <ResponsiveContainer width="100%" height={260}>
                 <LineChart data={scoreTrend}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -125,7 +140,9 @@ function Dashboard({ toggleTheme, mode }) {
 
           <Grid size={6}>
             <Paper sx={{ p: 3, borderRadius: 3 }}>
-              <Typography mb={2} sx={{ fontWeight: "bold" }}>Sleep Hours per Day</Typography>
+              <Typography mb={2} sx={{ fontWeight: "bold" }}>
+                Sleep Hours per Day
+              </Typography>
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={sleepHours}>
                   <CartesianGrid strokeDasharray="3 3" />
@@ -158,12 +175,10 @@ function Dashboard({ toggleTheme, mode }) {
                     nameKey="label"
                     cx="50%"
                     cy="50%"
-                    innerRadius={0}
                     outerRadius={95}
-                    label={({ name, percent }) =>
-                      `${name}: ${(percent * 100).toFixed(0)}%`
+                    label={({ label, percent }) =>
+                      `${label}: ${(percent * 100).toFixed(0)}%`
                     }
-                    labelLine={false}
                   >
                     {pieData.map((entry, index) => (
                       <Cell key={index} fill={entry.color} />
@@ -177,7 +192,9 @@ function Dashboard({ toggleTheme, mode }) {
 
           <Grid size={6}>
             <Paper sx={{ p: 3, borderRadius: 3, height: "100%" }}>
-              <Typography mb={2} sx={{ fontWeight: "bold" }}>Recent Sleep Entries</Typography>
+              <Typography mb={2} sx={{ fontWeight: "bold" }}>
+                Recent Sleep Entries
+              </Typography>
 
               {history.slice(0, 5).map((h) => (
                 <Box
@@ -189,7 +206,7 @@ function Dashboard({ toggleTheme, mode }) {
                     p: 2,
                     mb: 1,
                     borderRadius: 2,
-                    backgroundColor: "background.default"
+                    backgroundColor: "background.default",
                   }}
                 >
                   <Typography>{h.date}</Typography>
@@ -210,8 +227,7 @@ function Dashboard({ toggleTheme, mode }) {
           </Grid>
         </Grid>
       </Box>
-      </Box>
-    </>
+    </Box>
   );
 }
 

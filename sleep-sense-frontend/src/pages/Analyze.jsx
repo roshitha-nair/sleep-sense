@@ -12,10 +12,12 @@ import {
 import AppButton from "../components/common/AppButton";
 import { analyzeSleep } from "../services/api";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 
 
 function Analyze({ toggleTheme, mode }) {
+  const { user, loading } = useAuth();
   const [form, setForm] = useState({
     bedtime: "",
     wakeTime: "",
@@ -38,34 +40,36 @@ function Analyze({ toggleTheme, mode }) {
     form.activity >= 0 &&
     (!form.nap || (form.nap && form.napDuration > 0));
 
-    const handleSubmit = async () => {
-        try {
-            const payload = {
-                bedtime: form.bedtime,
-                wakeTime: form.wakeTime,
-                screenTime: Number(form.screenTime),
-                caffeineCups: Number(form.caffeineCups),
-                lastCaffeine: form.lastCaffeine || null,
-                stress: form.stress,
-                activity: Number(form.activity),
-                nap: form.nap,
-                napDuration: form.nap ? Number(form.napDuration) : 0,
-            };
+  if (loading) return null;
+  if (!user) return null;
 
-            // ✅ ACTUAL BACKEND CALL
-            const result = await analyzeSleep(payload);
+  const handleSubmit = async () => {
+    try {
+      const payload = {
+        bedtime: form.bedtime,
+        wakeTime: form.wakeTime,
+        screenTime: Number(form.screenTime),
+        caffeineCups: Number(form.caffeineCups),
+        lastCaffeine: form.lastCaffeine || null,
+        stress: form.stress,
+        activity: Number(form.activity),
+        nap: form.nap,
+        napDuration: form.nap ? Number(form.napDuration) : 0,
+      };
+      // ✅ ACTUAL BACKEND CALL
+      const result = await analyzeSleep(payload);
 
-            // ✅ Navigate to Results page with backend data
-            navigate("/result", {
-                state: {
-                result,
-                input: payload,
-            },
-            });
-        } catch (error) {
-            console.error("Error calling backend:", error);
-        }
-    };
+      // ✅ Navigate to Results page with backend data
+      navigate("/result", {
+        state: {
+          result,
+          input: payload,
+        },
+      });
+    } catch (error) {
+      console.error("Error calling backend:", error);
+    }
+  };
 
 
 

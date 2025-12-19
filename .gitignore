@@ -1,0 +1,23 @@
+# ========================
+# Environment variables
+# ========================
+.env
+.env.*
+sleep-sense-backend/.env
+
+# ========================
+# Node
+# ========================
+node_modules/
+dist/
+
+# ========================
+# Python
+# ========================
+__pycache__/
+*.pyc
+venv/
+
+# ========================
+# Firebase
+sleep-sense/sleep-sense-backend/sleep-sense-57e04-firebase-adminsdk-fbsvc-2c8c1ec09c.json
