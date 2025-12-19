@@ -21,7 +21,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import { getSleepHistory } from "../services/api";
+import { getSleepHistory, deleteSleepRecord } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 
@@ -43,6 +43,17 @@ function Dashboard() {
 
     fetchHistory();
   }, [user, loading]);
+
+
+  const handleDelete = async (id) => {
+  try {
+    await deleteSleepRecord(id);
+    setHistory((prev) => prev.filter((h) => h.id !== id));
+  } catch (error) {
+    console.error("Failed to delete record", error);
+  }
+};
+
 
   const latest = history[0];
 
@@ -220,6 +231,13 @@ function Dashboard() {
                         ? "warning"
                         : "error"
                     }
+                  />
+                  <Chip
+                    label="Delete"
+                    color="error"
+                    variant="outlined"
+                    onClick={() => handleDelete(h.id)}
+                    sx={{ cursor: "pointer" }}
                   />
                 </Box>
               ))}

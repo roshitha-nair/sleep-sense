@@ -9,6 +9,7 @@ from app.utils.feature_engineering import build_features
 from app.db.database import engine, get_db
 from app.db import models
 from app.core.auth import get_current_user
+from fastapi import HTTPException
 
 app = FastAPI()
 
@@ -135,3 +136,29 @@ def get_sleep_history(
         }
         for r in records
     ]
+
+# ============================
+# 🗑️ Delete Sleep Record (PHASE 3)
+# ============================
+@app.delete("/history/{record_id}")
+def delete_sleep_record(
+    record_id: int,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    record = (
+        db.query(models.SleepRecord)
+        .filter(
+            models.SleepRecord.id == record_id,
+            models.SleepRecord.user_id == current_user["id"],
+        )
+        .first()
+    )
+
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    db.delete(record)
+    db.commit()
+
+    return {"message": "Sleep record deleted successfully"}

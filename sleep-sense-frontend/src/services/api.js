@@ -45,3 +45,8 @@ export const getSleepHistory = async () => {
   const response = await api.get("/history");
   return response.data;
 };
+export const deleteSleepRecord = async (recordId) => {
+  const response = await api.delete(`/history/${recordId}`);
+  return response.data;
+};
+
