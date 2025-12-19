@@ -4,6 +4,9 @@ import firebase_admin
 from firebase_admin import auth as firebase_auth, credentials
 from sqlalchemy.orm import Session
 
+import os
+import json
+
 from app.db.database import get_db
 from app.db import models
 
@@ -14,7 +17,12 @@ security = HTTPBearer(auto_error=False)
 # 🔐 Firebase Admin Initialization
 # ================================
 if not firebase_admin._apps:
-    cred = credentials.Certificate("sleep-sense-57e04-firebase-adminsdk-fbsvc-2c8c1ec09c.json")
+    firebase_json = os.getenv("FIREBASE_SERVICE_ACCOUNT")
+
+    if not firebase_json:
+        raise RuntimeError("FIREBASE_SERVICE_ACCOUNT environment variable not set")
+
+    cred = credentials.Certificate(json.loads(firebase_json))
     firebase_admin.initialize_app(cred)
 
 def get_current_user(
