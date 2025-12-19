@@ -22,4 +22,3 @@ venv/
 # Firebase credentials
 # =========================
 sleep-sense-backend/*.json
-*.json
