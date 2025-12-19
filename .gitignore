@@ -18,8 +18,8 @@ __pycache__/
 *.pyc
 venv/
 
-# ========================
-# Firebase
-# Firebase service account
-*.json
+# =========================
+# Firebase credentials
+# =========================
 sleep-sense-backend/*.json
+*.json
