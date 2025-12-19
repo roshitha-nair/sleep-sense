@@ -4,6 +4,7 @@ import {
   Typography,
   Paper,
   Chip,
+  Button,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import {
@@ -21,7 +22,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import { getSleepHistoryByRange, deleteSleepRecord } from "../services/api";
+import { getSleepHistoryByRange, deleteSleepRecord, downloadSleepReport } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 
@@ -54,6 +55,17 @@ function Dashboard() {
     console.error("Failed to delete record", error);
   }
 };
+
+const handleExport = async () => {
+  const pdfRange = range === "all" ? 90 : range;
+  const blob = await downloadSleepReport(pdfRange);
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "sleep_report.pdf";
+  a.click();
+};
+
 
 
   const latest = history[0];
@@ -91,27 +103,45 @@ function Dashboard() {
           Track your sleep patterns and progress over time
         </Typography>
 
+        {/* FILTERS + EXPORT ROW */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 4,
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
         {/* RANGE SELECTOR */}
-        <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
-          <Chip
-            label="Last 7 Days"
-            clickable
-            color={range === "7" ? "primary" : "default"}
-            onClick={() => setRange("7")}
-          />
-          <Chip
-            label="Last 30 Days"
-            clickable
-            color={range === "30" ? "primary" : "default"}
-            onClick={() => setRange("30")}
-          />
-          <Chip
-            label="All Time"
-            clickable
-            color={range === "all" ? "primary" : "default"}
-            onClick={() => setRange("all")}
-          />
-        </Box>   
+      <Box sx={{ display: "flex", gap: 2 }}>
+        <Chip
+          label="Last 7 Days"
+          clickable
+          color={range === "7" ? "primary" : "default"}
+          onClick={() => setRange("7")}
+        />
+        <Chip
+          label="Last 30 Days"
+          clickable
+          color={range === "30" ? "primary" : "default"}
+          onClick={() => setRange("30")}
+        />
+        <Chip
+          label="All Time"
+          clickable
+          color={range === "all" ? "primary" : "default"}
+          onClick={() => setRange("all")}
+        />
+      </Box>
+
+      {/* EXPORT BUTTON */}
+      <Button variant="outlined" onClick={handleExport}>
+        Export PDF
+      </Button>
+    </Box>  
+
 
         {/* SUMMARY */}
         <Grid container spacing={3} mb={5}>

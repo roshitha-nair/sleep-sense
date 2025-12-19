@@ -53,5 +53,12 @@ export const getSleepHistoryByRange = async (range = "all") => {
   const response = await api.get(`/history?range=${range}`);
   return response.data;
 };
+export const downloadSleepReport = async (range = 7) => {
+  const response = await api.get(`/report/pdf?range=${range}`, {
+    responseType: "blob",
+  });
+  return response.data;
+};
+
 
 

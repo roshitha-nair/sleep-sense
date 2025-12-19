@@ -12,6 +12,9 @@ from app.core.auth import get_current_user
 from fastapi import HTTPException
 from datetime import datetime, timedelta
 from fastapi import Query
+from fastapi.responses import StreamingResponse
+from app.utils.pdf_report import generate_sleep_report_pdf
+
 
 app = FastAPI()
 
@@ -169,3 +172,61 @@ def delete_sleep_record(
     db.commit()
 
     return {"message": "Sleep record deleted successfully"}
+
+
+# ============================
+# 📄 Export Sleep Report PDF
+# ============================
+@app.get("/report/pdf")
+def export_sleep_report(
+    range: int = 7,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    now = datetime.utcnow()
+
+    if range == 7:
+        start_date = now - timedelta(days=7)
+    elif range == 30:
+        start_date = now - timedelta(days=30)
+    else:
+        start_date = None
+
+    query = db.query(models.SleepRecord).filter(
+        models.SleepRecord.user_id == current_user["id"]
+    )
+
+    if start_date:
+        query = query.filter(models.SleepRecord.created_at >= start_date)
+
+    records = query.order_by(desc(models.SleepRecord.created_at)).all()
+
+    if not records:
+        raise HTTPException(status_code=404, detail="No records found")
+
+    avg_score = sum(r.sleep_score for r in records) / len(records)
+
+    quality_count = {"Good": 0, "Average": 0, "Poor": 0}
+    tips_set = set()
+
+    for r in records:
+        quality_count[r.sleep_quality] += 1
+        for tip in r.tips:
+            tips_set.add(tip)
+
+    pdf_buffer = generate_sleep_report_pdf(
+        user_email=current_user["email"],
+        records=records,
+        avg_score=avg_score,
+        quality_count=quality_count,
+        tips=list(tips_set)[:5],
+    )
+
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": "attachment; filename=sleep_report.pdf"
+        },
+    )
+
