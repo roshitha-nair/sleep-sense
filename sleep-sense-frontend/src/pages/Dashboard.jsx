@@ -21,12 +21,13 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import { getSleepHistory, deleteSleepRecord } from "../services/api";
+import { getSleepHistoryByRange, deleteSleepRecord } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 
 function Dashboard() {
   const [history, setHistory] = useState([]);
+  const [range, setRange] = useState("all");
   const { user, loading } = useAuth();
 
   useEffect(() => {
@@ -34,7 +35,7 @@ function Dashboard() {
 
     const fetchHistory = async () => {
       try {
-        const data = await getSleepHistory();
+        const data = await getSleepHistoryByRange(range);
         setHistory(data);
       } catch (error) {
         console.error("Failed to load history", error);
@@ -42,7 +43,7 @@ function Dashboard() {
     };
 
     fetchHistory();
-  }, [user, loading]);
+  }, [user, loading, range]);
 
 
   const handleDelete = async (id) => {
@@ -89,6 +90,28 @@ function Dashboard() {
         <Typography color="text.secondary" mb={5}>
           Track your sleep patterns and progress over time
         </Typography>
+
+        {/* RANGE SELECTOR */}
+        <Box sx={{ display: "flex", gap: 2, mb: 4 }}>
+          <Chip
+            label="Last 7 Days"
+            clickable
+            color={range === "7" ? "primary" : "default"}
+            onClick={() => setRange("7")}
+          />
+          <Chip
+            label="Last 30 Days"
+            clickable
+            color={range === "30" ? "primary" : "default"}
+            onClick={() => setRange("30")}
+          />
+          <Chip
+            label="All Time"
+            clickable
+            color={range === "all" ? "primary" : "default"}
+            onClick={() => setRange("all")}
+          />
+        </Box>   
 
         {/* SUMMARY */}
         <Grid container spacing={3} mb={5}>

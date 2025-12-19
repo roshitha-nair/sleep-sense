@@ -49,4 +49,9 @@ export const deleteSleepRecord = async (recordId) => {
   const response = await api.delete(`/history/${recordId}`);
   return response.data;
 };
+export const getSleepHistoryByRange = async (range = "all") => {
+  const response = await api.get(`/history?range=${range}`);
+  return response.data;
+};
+
 

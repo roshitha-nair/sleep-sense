@@ -10,6 +10,8 @@ from app.db.database import engine, get_db
 from app.db import models
 from app.core.auth import get_current_user
 from fastapi import HTTPException
+from datetime import datetime, timedelta
+from fastapi import Query
 
 app = FastAPI()
 
@@ -111,19 +113,24 @@ def predict_sleep(
 
 
 # ============================
-# 📊 Fetch Sleep History
+# 📊 Fetch Sleep History (Filtered)
 # ============================
 @app.get("/history")
 def get_sleep_history(
+    range: str = Query("all", enum=["7", "30", "90", "all"]),
     current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    records = (
-        db.query(models.SleepRecord)
-        .filter(models.SleepRecord.user_id == current_user["id"])
-        .order_by(desc(models.SleepRecord.created_at))
-        .all()
+    query = db.query(models.SleepRecord).filter(
+        models.SleepRecord.user_id == current_user["id"]
     )
+
+    if range != "all":
+        days = int(range)
+        from_date = datetime.utcnow() - timedelta(days=days)
+        query = query.filter(models.SleepRecord.created_at >= from_date)
+
+    records = query.order_by(desc(models.SleepRecord.created_at)).all()
 
     return [
         {
