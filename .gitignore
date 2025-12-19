@@ -20,4 +20,6 @@ venv/
 
 # ========================
 # Firebase
-sleep-sense/sleep-sense-backend/sleep-sense-57e04-firebase-adminsdk-fbsvc-2c8c1ec09c.json
+# Firebase service account
+*.json
+sleep-sense-backend/*.json
