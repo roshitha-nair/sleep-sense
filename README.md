@@ -91,7 +91,6 @@ sleep-sense/
 │   │
 │   ├── .env                          # Backend environment variables
 │   ├── requirements.txt              # Backend dependencies
-│   ├── sleep-sense-57e04-firebase-adminsdk-*.json
 │   └── README.md
 │
 ├── sleep-sense-frontend/             # React (Vite) frontend
@@ -99,7 +98,6 @@ sleep-sense/
 │   ├── src/
 │   │   ├── assets/                   # Images & icons
 │   │   │   ├── logo.png
-│   │   │   ├── logo(1).png
 │   │   │   └── react.svg
 │   │   ├── components/
 │   │   │   ├── common/               # Reusable components
